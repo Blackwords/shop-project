@@ -34,19 +34,26 @@ let products = [];
 
 // Завантаження товарів з Supabase
 async function fetchProducts() {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    console.log("Спроба завантажити товари з Supabase...");
+    try {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching products:', error);
-        return;
+        if (error) {
+            console.error('Помилка Supabase:', error.message);
+            // Якщо таблиці немає, ми це побачимо в консолі
+            return;
+        }
+
+        console.log("Товари завантажено успішно:", data);
+        products = data;
+        renderProducts();
+        renderAdminList();
+    } catch (err) {
+        console.error('Критична помилка підключення:', err);
     }
-
-    products = data;
-    renderProducts();
-    renderAdminList();
 }
 
 // Функція для оновлення прев'ю
