@@ -231,26 +231,34 @@ function saveAndRender() {
 
 // Функція перевірки авторизації
 function checkAuth() {
+    console.log("Checking auth status...");
     const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+    console.log("Is Admin:", isAdmin);
+    
     if (isAdmin) {
-        loginBtn.classList.add('hidden');
-        adminControls.classList.remove('hidden');
+        if (loginBtn) loginBtn.classList.add('hidden');
+        if (adminControls) adminControls.classList.remove('hidden');
     } else {
-        loginBtn.classList.remove('hidden');
-        adminControls.classList.add('hidden');
+        if (loginBtn) loginBtn.classList.remove('hidden');
+        if (adminControls) adminControls.classList.add('hidden');
     }
 }
 
 // Логіка входу
-loginBtn.addEventListener('click', () => {
-    const password = prompt('Введіть пароль адміністратора:');
-    if (password === ADMIN_PASSWORD) {
-        sessionStorage.setItem('isAdmin', 'true');
-        checkAuth();
-    } else if (password !== null) {
-        alert('Невірний пароль!');
-    }
-});
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        console.log("Login button clicked");
+        const password = prompt('Введіть пароль адміністратора:');
+        if (password === ADMIN_PASSWORD) {
+            sessionStorage.setItem('isAdmin', 'true');
+            checkAuth();
+        } else if (password !== null) {
+            alert('Невірний пароль!');
+        }
+    });
+} else {
+    console.error("Login button (login-btn) not found in DOM!");
+}
 
 // Функція виходу
 logoutBtn.addEventListener('click', () => {
