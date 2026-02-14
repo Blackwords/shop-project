@@ -6,7 +6,12 @@ const ADMIN_PASSWORD = "admin55";
 const SUPABASE_URL = 'https://usqxkzoerbebaighyuik.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ksAch6V-TJOTWYdzFyC9xw_8MFqYRU6';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Ініціалізація Supabase (перевіряємо чи не ініціалізовано вже)
+let supabase;
+if (typeof window.supabaseClient === 'undefined') {
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+supabase = window.supabaseClient;
 
 // DOM елементиTelegram налаштування тепер у script.js
 
