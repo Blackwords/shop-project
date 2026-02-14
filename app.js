@@ -2,7 +2,13 @@
 const OWNER_PHONE = "+380000000000"; 
 const ADMIN_PASSWORD = "admin55"; 
 
-// Telegram налаштування тепер у script.js
+// Supabase Конфігурація
+const SUPABASE_URL = 'https://usqxkzoerbebaighyuik.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ksAch6V-TJOTWYdzFyC9xw_8MFqYRU6';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// DOM елементиTelegram налаштування тепер у script.js
 
 // DOM елементи
 const productList = document.getElementById('product-list');
@@ -23,8 +29,25 @@ const importFileInput = document.getElementById('import-file');
 
 let currentPhotoData = ''; 
 
-// Завантаження товарів з localStorage
-let products = JSON.parse(localStorage.getItem('products')) || [];
+// Масив товарів
+let products = [];
+
+// Завантаження товарів з Supabase
+async function fetchProducts() {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching products:', error);
+        return;
+    }
+
+    products = data;
+    renderProducts();
+    renderAdminList();
+}
 
 // Функція для оновлення прев'ю
 function updatePreview(source) {
@@ -62,7 +85,7 @@ photoUrlInput.addEventListener('input', (e) => {
 });
 
 // Додавання товару
-addProductForm.addEventListener('submit', (e) => {
+addProductForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     if (!currentPhotoData) {
@@ -77,8 +100,16 @@ addProductForm.addEventListener('submit', (e) => {
         photo: currentPhotoData
     };
     
-    products.push(newProduct);
-    saveAndRender();
+    const { data, error } = await supabase
+        .from('products')
+        .insert([newProduct]);
+
+    if (error) {
+        alert('Помилка при збереженні: ' + error.message);
+        return;
+    }
+    
+    fetchProducts();
     
     // Скидання форми та закриття
     addProductForm.reset();
@@ -97,7 +128,7 @@ function renderAdminList() {
         return;
     }
 
-    products.forEach((product, index) => {
+    products.forEach((product) => {
         const item = document.createElement('div');
         item.className = 'bg-white p-4 rounded-2xl flex items-center gap-4 shadow-sm border border-gray-100 group';
         item.innerHTML = `
@@ -106,7 +137,7 @@ function renderAdminList() {
                 <h4 class="font-medium text-gray-900 truncate">${product.name}</h4>
                 <p class="text-sm text-gray-400">${product.price} ₴</p>
             </div>
-            <button onclick="deleteProduct(${index})" class="p-2 text-gray-300 hover:text-red-500 transition-colors">
+            <button onclick="deleteProduct(${product.id})" class="p-2 text-gray-300 hover:text-red-500 transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -169,16 +200,24 @@ function renderProducts() {
 }
 
 // Функція для видалення товару
-window.deleteProduct = function(index) {
+window.deleteProduct = async function(id) {
     if (confirm('Ви впевнені, що хочете видалити цей товар?')) {
-        products.splice(index, 1);
-        saveAndRender();
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            alert('Помилка при видаленні: ' + error.message);
+            return;
+        }
+        
+        fetchProducts();
     }
 };
 
-// Збереження в localStorage та рендер
+// Збереження в localStorage та рендер (Більше не використовується для товарів)
 function saveAndRender() {
-    localStorage.setItem('products', JSON.stringify(products));
     renderProducts();
     renderAdminList();
 }
@@ -297,5 +336,5 @@ adminModal.addEventListener('click', (e) => {
 
 
 // Початковий рендер
-renderProducts();
+fetchProducts();
 checkAuth();
