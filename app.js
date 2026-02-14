@@ -226,6 +226,79 @@ function updatePreview(source) {
     }
 }
 
+// Функція відображення товарів на вітрині
+function renderProducts() {
+    if (!productList) return;
+    productList.innerHTML = products.map(product => `
+        <div class="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 transform hover:-translate-y-2 border border-gray-50">
+            <div class="aspect-[4/5] overflow-hidden relative">
+                <img src="${product.photo || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000'}" 
+                     alt="${product.name}" 
+                     class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-opacity duration-700"></div>
+                <div class="absolute bottom-6 left-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                    <button onclick="sendTelegramMessage('${product.name}')" 
+                            class="w-full bg-black text-white py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-light hover:bg-zinc-800 transition-colors shadow-xl">
+                        Замовити зараз
+                    </button>
+                </div>
+            </div>
+            <div class="p-8 text-center">
+                <h3 class="text-xs uppercase tracking-[0.3em] font-light text-gray-400 mb-3">${product.name}</h3>
+                <div class="h-px w-8 bg-black mx-auto mb-4 opacity-10"></div>
+                <p class="text-lg font-light tracking-tight text-gray-900 mb-2">${product.price} ₴</p>
+                ${product.description ? `<p class="text-xs text-gray-400 font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700">${product.description}</p>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Функція відображення списку в адмінці
+function renderAdminList() {
+    if (!adminProductList) return;
+    adminProductList.innerHTML = products.map(product => `
+        <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 group hover:border-red-100 transition-all">
+            <img src="${product.photo}" class="w-12 h-12 rounded-xl object-cover">
+            <div class="flex-grow">
+                <h4 class="text-sm font-medium text-gray-900">${product.name}</h4>
+                <p class="text-xs text-gray-400">${product.price} ₴</p>
+            </div>
+            <button onclick="deleteProduct(${product.id})" class="p-2 text-gray-300 hover:text-red-500 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Функція видалення товару
+async function deleteProduct(id) {
+    if (!confirm('Ви впевнені, що хочете видалити цей товар?')) return;
+    
+    const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert('Помилка при видаленні: ' + error.message);
+        return;
+    }
+
+    fetchProducts();
+}
+
+// Перевірка авторизації
+function checkAuth() {
+    const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+    if (isAdmin) {
+        if (loginBtn) loginBtn.classList.add('hidden');
+        if (adminControls) adminControls.classList.remove('hidden');
+    } else {
+        if (loginBtn) loginBtn.classList.remove('hidden');
+        if (adminControls) adminControls.classList.add('hidden');
+    }
+}
+
 // Видаляємо дубльовані старі обробники внизу файлу, вони тепер в initEventListeners
 // Початковий рендер
 document.addEventListener('DOMContentLoaded', () => {
