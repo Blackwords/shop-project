@@ -6,12 +6,12 @@ const ADMIN_PASSWORD = "admin55";
 const SUPABASE_URL = 'https://usqxkzoerbebaighyuik.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ksAch6V-TJOTWYdzFyC9xw_8MFqYRU6';
 
-// Ініціалізація Supabase (перевіряємо чи не ініціалізовано вже)
-let supabase;
-if (typeof window.supabaseClient === 'undefined') {
-    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Ініціалізація Supabase
+let sb;
+if (typeof window.supabaseClientInstance === 'undefined') {
+    window.supabaseClientInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
-supabase = window.supabaseClient;
+sb = window.supabaseClientInstance;
 
 // DOM елементиTelegram налаштування тепер у script.js
 
@@ -119,7 +119,7 @@ function initEventListeners() {
                 price: document.getElementById('price').value,
                 photo: currentPhotoData
             };
-            const { data, error } = await supabase.from('products').insert([newProduct]);
+            const { data, error } = await sb.from('products').insert([newProduct]);
             if (error) {
                 alert('Помилка при збереженні: ' + error.message);
                 return;
@@ -195,7 +195,7 @@ let products = [];
 async function fetchProducts() {
     console.log("Спроба завантажити товари з Supabase...");
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('products')
             .select('*')
             .order('created_at', { ascending: false });
@@ -274,7 +274,7 @@ function renderAdminList() {
 async function deleteProduct(id) {
     if (!confirm('Ви впевнені, що хочете видалити цей товар?')) return;
     
-    const { error } = await supabase
+    const { error } = await sb
         .from('products')
         .delete()
         .eq('id', id);
