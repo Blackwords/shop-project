@@ -3,27 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вітрина товарів</title>
+    <title>MY STORE | Мінімалістичний магазин</title>
+    <meta name="description" content="Ексклюзивний магазин мінімалістичних товарів. Знайдіть стиль та якість у кожному предметі.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mystore.com/">
+    <meta property="og:title" content="MY STORE | Мінімалістичний магазин">
+    <meta property="og:description" content="Ексклюзивний магазин мінімалістичних товарів. Знайдіть стиль та якість у кожному предметі.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mystore.com/">
+    <meta property="twitter:title" content="MY STORE | Мінімалістичний магазин">
+    <meta property="twitter:description" content="Ексклюзивний магазин мінімалістичних товарів. Знайдіть стиль та якість у кожному предметі.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            // Ініціалізація EmailJS з вашим Public Key
+            // Вам потрібно замінити 'YOUR_PUBLIC_KEY' на ваш реальний ключ з EmailJS
+            emailjs.init("gYKBUDg8yX0-URsG8");
+        })();
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#121212',
+                            surface: '#1E1E1E',
+                            border: '#2C2C2C',
+                            text: '#E0E0E0',
+                            muted: '#A0A0A0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.6s ease-out forwards;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Header -->
-    <header class="py-20 px-6 text-center">
-        <h1 class="text-6xl md:text-7xl font-extralight tracking-tighter text-gray-900 mb-6">Колекція</h1>
-        <div class="h-px w-24 bg-black mx-auto mb-6 opacity-10"></div>
-        <p class="text-xl md:text-2xl text-gray-400 font-light tracking-wide">Мінімалізм та стиль у кожному предметі</p>
+    <header class="py-20 px-6 text-center relative">
+        <div class="absolute top-6 right-6 z-20 flex items-center gap-2">
+            <button id="theme-toggle" class="p-2 text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                <!-- Sun Icon (hidden by default) -->
+                <svg id="theme-toggle-light-icon" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <!-- Moon Icon (hidden by default) -->
+                <svg id="theme-toggle-dark-icon" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <button id="cart-btn" class="relative p-2 text-gray-800 hover:text-black transition-colors dark:text-gray-300 dark:hover:text-white">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span id="cart-count" class="absolute top-0 right-0 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden dark:bg-white dark:text-black">0</span>
+            </button>
+        </div>
+
+        <h1 class="text-4xl md:text-6xl font-light tracking-tight mb-4 dark:text-white">
+            MY <span class="font-semibold">STORE</span>
+        </h1>
+        <div class="h-px w-24 bg-black mx-auto mb-6 opacity-10 dark:bg-white dark:opacity-20"></div>
+        <p class="text-xl md:text-2xl text-gray-400 font-light tracking-wide dark:text-gray-500">Мінімалізм та стиль у кожному предметі</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto px-6 pb-24">
+        <!-- Filters & Search -->
+        <div class="mb-12 space-y-8">
+            <!-- Search -->
+            <div class="max-w-md mx-auto relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" 
+                       id="search-input" 
+                       placeholder="Пошук товарів..." 
+                       class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all shadow-sm hover:shadow-md text-center placeholder-gray-400 dark:bg-dark-surface dark:border-dark-border dark:text-white dark:placeholder-gray-600 dark:focus:ring-white">
+            </div>
+
+            <!-- Categories -->
+            <div id="category-filters" class="flex flex-wrap justify-center gap-4">
+                <!-- Buttons will be injected here by JS -->
+            </div>
+        </div>
+
         <div id="product-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             <!-- Товари будуть додані сюди через JS -->
         </div>
@@ -39,33 +136,70 @@
                 Налаштування вітрини
             </button>
             <button id="logout-btn" class="text-red-300 hover:text-red-500 transition-all duration-500 text-[10px] uppercase tracking-[0.3em] font-light block mx-auto">
-                Вийти з режиму редагування
+                Вийти з режиму реда@гування
             </button>
         </div>
     </footer>
 
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 hidden transition-opacity">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full dark:bg-dark-surface dark:text-white" id="cart-panel">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-dark-border">
+                <h2 class="text-xl font-light uppercase tracking-widest">Кошик</h2>
+                <button id="close-cart" class="text-gray-400 hover:text-black dark:hover:text-white">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Items will be injected here -->
+                <p class="text-center text-gray-400 mt-10">Кошик порожній</p>
+            </div>
+
+            <div class="p-6 border-t border-gray-100 bg-gray-50 dark:bg-dark-bg dark:border-dark-border">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-gray-500 dark:text-gray-400">Разом:</span>
+                    <span id="cart-total" class="text-2xl font-bold">0 ₴</span>
+                </div>
+                <button id="checkout-btn" class="w-full bg-black text-white py-4 rounded-xl font-medium hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                    Оформити замовлення
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Modal -->
     <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row dark:bg-dark-surface dark:text-white">
             <!-- Form Section -->
-            <div class="flex-1 p-8 md:p-10 border-b md:border-b-0 md:border-r border-gray-100 overflow-y-auto">
+            <div class="flex-1 p-8 md:p-10 border-b md:border-b-0 md:border-r border-gray-100 overflow-y-auto dark:border-dark-border">
                 <h2 class="text-3xl font-light mb-8">Новий товар</h2>
                 <form id="add-product-form" class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Назва</label>
                         <p class="text-xs text-gray-400 mb-2 italic">Як називається ваш товар?</p>
-                        <input type="text" id="name" required class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg">
+                        <input type="text" id="name" required class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Опис</label>
                         <p class="text-xs text-gray-400 mb-2 italic">Розкажіть трохи про товар (необов'язково)</p>
-                        <textarea id="description" rows="2" class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg"></textarea>
+                        <textarea id="description" rows="2" class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Мітка</label>
+                        <p class="text-xs text-gray-400 mb-2 italic">Наприклад: NEW, SALE, -20% (необов'язково)</p>
+                        <input type="text" id="tag" class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Категорія</label>
+                        <p class="text-xs text-gray-400 mb-2 italic">Наприклад: Взуття, Одяг, Аксесуари</p>
+                        <input type="text" id="category" class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Ціна (₴)</label>
                             <p class="text-xs text-gray-400 mb-2 italic">Тільки цифри</p>
-                            <input type="number" id="price" required class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg">
+                            <input type="number" id="price" required class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-lg dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Фото</label>
@@ -73,13 +207,13 @@
                             <div class="space-y-3">
                                 <div class="flex gap-3">
                                     <label class="flex-grow cursor-pointer group">
-                                        <div class="w-full px-5 py-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50 group-hover:bg-white group-hover:border-black transition-all flex items-center justify-center gap-2 text-gray-400 group-hover:text-black">
+                                        <div class="w-full px-5 py-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50 group-hover:bg-white group-hover:border-black transition-all flex items-center justify-center gap-2 text-gray-400 group-hover:text-black dark:bg-dark-bg dark:border-dark-border dark:group-hover:bg-dark-surface dark:group-hover:border-white dark:group-hover:text-white">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                                             <span class="text-sm font-light">Вибрати файл</span>
                                         </div>
                                         <input type="file" id="photo-file" accept="image/*" class="hidden">
                                     </label>
-                                    <div id="photo-preview-small" class="w-16 h-16 rounded-xl bg-gray-100 border border-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center text-gray-300">
+                                    <div id="photo-preview-small" class="w-16 h-16 rounded-xl bg-gray-100 border border-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center text-gray-300 dark:bg-dark-bg dark:border-dark-border">
                                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="1"/></svg>
                                     </div>
                                 </div>
@@ -87,30 +221,140 @@
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-300">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                                     </div>
-                                    <input type="url" id="photo-url" class="w-full pl-11 pr-5 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-sm" placeholder="Або вставте посилання (https://...)">
+                                    <input type="url" id="photo-url" class="w-full pl-11 pr-5 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-sm dark:bg-dark-bg dark:border-dark-border dark:text-white dark:focus:ring-white" placeholder="Або вставте посилання (https://...)">
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex gap-4 pt-4">
-                        <button type="button" id="close-modal" class="flex-1 py-4 px-6 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-colors font-light">Скасувати</button>
-                        <button type="submit" class="flex-1 py-4 px-6 rounded-2xl bg-black text-white hover:bg-zinc-800 transition-all shadow-lg shadow-black/5 font-light">Зберегти</button>
+                    <div class="mt-8">
+                        <button type="submit" id="submit-btn" class="w-full bg-black text-white py-4 rounded-2xl text-sm font-semibold uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-lg dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                            <span id="submit-btn-text">Додати товар</span>
+                        </button>
+                        <button type="button" id="cancel-edit-btn" class="w-full mt-3 bg-white text-gray-400 py-3 rounded-2xl text-xs font-medium uppercase tracking-widest hover:text-black border border-transparent hover:border-gray-200 transition-all hidden dark:bg-dark-bg dark:text-gray-500 dark:hover:text-white dark:hover:border-dark-border">
+                            Скасувати редагування
+                        </button>
                     </div>
                 </form>
             </div>
             
             <!-- List Section -->
-            <div class="flex-1 bg-gray-50 p-8 md:p-10 overflow-y-auto flex flex-col">
+            <div class="flex-1 bg-gray-50 p-8 md:p-10 overflow-y-auto flex flex-col dark:bg-dark-bg">
+                <!-- Statistics Section -->
+                <div class="mb-10 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 dark:bg-dark-surface dark:border-dark-border">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-light uppercase tracking-widest text-gray-900 dark:text-white">Статистика</h3>
+                        <button id="clear-history-btn" class="text-[10px] text-red-400 hover:text-red-600 uppercase tracking-wider font-semibold transition-colors">
+                            Очистити історію
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-baseline mb-6">
+                        <span class="text-sm text-gray-400">Всього продажів:</span>
+                        <span id="total-sales" class="text-3xl font-light text-green-600">0 ₴</span>
+                    </div>
+                    <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Останні замовлення</h4>
+                    <div id="orders-list" class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                        <!-- Orders will be injected here -->
+                        <p class="text-gray-300 italic text-xs">Замовлень поки немає...</p>
+                    </div>
+                </div>
+
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-light uppercase tracking-widest text-gray-400">Управління</h3>
+                    <h3 class="text-xl font-light uppercase tracking-widest text-gray-400">Налаштування магазину</h3>
+                </div>
+
+                <!-- Блок налаштувань -->
+                <div class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100 dark:bg-dark-surface dark:border-dark-border">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Назва магазину</label>
+                            <input type="text" id="setting-store-name" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white" placeholder="Мій Магазин">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Email для сповіщень</label>
+                            <input type="email" id="setting-email" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white" placeholder="owner@example.com">
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Сюди будуть приходити копії замовлень із сайту</p>
+                        </div>
+
+                        <div class="flex items-center gap-4 py-2">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="setting-email-notification" class="sr-only peer">
+                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-black"></div>
+                                <span class="ml-3 text-lg font-medium text-gray-900 dark:text-gray-300">Дублювати замовлення на Email</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Валюта</label>
+                            <select id="setting-currency" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white">
+                                <option value="₴">Гривня (₴)</option>
+                                <option value="€">Євро (€)</option>
+                                <option value="$">Долар ($)</option>
+                            </select>
+                        </div>
+
+                        <button onclick="saveSettings()" id="save-settings-btn" class="w-full bg-black text-white py-4 rounded-xl text-lg font-medium hover:bg-gray-800 transition-all shadow-lg active:scale-95 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                            Зберегти налаштування
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Блок керування доступом -->
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-light uppercase tracking-widest text-gray-400">Керування доступом</h3>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100 dark:bg-dark-surface dark:border-dark-border">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Пошта адміністратора (для входу)</label>
+                            <input type="email" id="setting-admin-email" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white" placeholder="admin@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Поточний пароль</label>
+                            <div class="relative">
+                                <input type="password" id="setting-old-password" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white pr-12" placeholder="••••••••">
+                                <button type="button" onclick="togglePassword('setting-old-password')" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Новий пароль</label>
+                            <div class="relative">
+                                <input type="password" id="setting-new-password" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white pr-12" placeholder="••••••••">
+                                <button type="button" onclick="togglePassword('setting-new-password')" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Повторіть новий пароль</label>
+                            <div class="relative">
+                                <input type="password" id="setting-confirm-password" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white pr-12" placeholder="••••••••">
+                                <button type="button" onclick="togglePassword('setting-confirm-password')" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button onclick="updateAccessData()" id="update-access-btn" class="w-full bg-black text-white py-4 rounded-xl text-lg font-medium hover:bg-gray-800 transition-all shadow-lg active:scale-95 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                            Оновити дані доступу
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-light uppercase tracking-widest text-gray-400">Управління товарами</h3>
                     <div class="flex gap-2">
+                        <button id="seed-btn" title="Додати тестові товари" class="p-2 text-gray-400 hover:text-green-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </button>
                         <button id="tg-settings-btn" title="Налаштувати Telegram" class="p-2 text-gray-400 hover:text-[#0088cc] transition-colors">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                         </button>
-                        <button id="export-btn" title="Завантажити копію всіх товарів" class="p-2 text-gray-400 hover:text-black transition-colors">
+                        <button id="export-btn" title="Завантажити копію всіх товарів" class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0L8 8m4-4v12" /></svg>
                         </button>
-                        <label class="p-2 text-gray-400 hover:text-black transition-colors cursor-pointer">
+                        <label class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" transform="rotate(180 12 12)"/></svg>
                             <input type="file" id="import-file" accept=".json" class="hidden">
                         </label>
