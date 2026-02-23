@@ -73,6 +73,11 @@
     <!-- Header -->
     <header class="py-20 px-6 text-center relative">
         <div class="absolute top-6 right-6 z-20 flex items-center gap-2">
+            <button id="user-login-btn" class="p-2 text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" title="Вхід для покупця">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
             <button id="theme-toggle" class="p-2 text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
                 <!-- Sun Icon (hidden by default) -->
                 <svg id="theme-toggle-light-icon" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,6 +162,14 @@
             </div>
 
             <div class="p-6 border-t border-gray-100 bg-gray-50 dark:bg-dark-bg dark:border-dark-border">
+                <!-- Форма даних покупця -->
+                <div class="mb-6 space-y-3">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Ваші дані</h3>
+                    <input type="text" id="customer-name" placeholder="Ім'я *" class="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-surface dark:border-dark-border dark:text-white">
+                    <input type="tel" id="customer-phone" placeholder="Телефон *" class="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-surface dark:border-dark-border dark:text-white">
+                    <input type="email" id="customer-email" placeholder="Email (необов'язково)" class="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-surface dark:border-dark-border dark:text-white">
+                </div>
+
                 <div class="flex justify-between items-center mb-6">
                     <span class="text-gray-500 dark:text-gray-400">Разом:</span>
                     <span id="cart-total" class="text-2xl font-bold">0 ₴</span>
@@ -168,12 +181,49 @@
         </div>
     </div>
 
+    <!-- User Login Modal -->
+    <div id="user-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 dark:bg-dark-bg dark:text-white">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-light">Вхід для покупця</h2>
+                <button id="close-user-modal" class="text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <form id="user-login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-500 mb-1 dark:text-gray-400">Ваше ім'я</label>
+                    <input type="text" id="user-login-name" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-black dark:bg-dark-surface dark:text-white dark:focus:ring-gray-500 transition-all" placeholder="Введіть ваше ім'я">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-500 mb-1 dark:text-gray-400">Ваш телефон</label>
+                    <input type="tel" id="user-login-phone" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-black dark:bg-dark-surface dark:text-white dark:focus:ring-gray-500 transition-all" placeholder="+380...">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-500 mb-1 dark:text-gray-400">Email (необов'язково)</label>
+                    <input type="email" id="user-login-email" class="w-full px-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-black dark:bg-dark-surface dark:text-white dark:focus:ring-gray-500 transition-all" placeholder="example@mail.com">
+                </div>
+                <button type="submit" class="w-full bg-black text-white py-3 rounded-xl hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200 font-medium mt-4">
+                    Увійти / Зберегти дані
+                </button>
+            </form>
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-dark-border text-center">
+                <button id="user-logout-btn" class="text-red-500 text-sm hover:underline hidden">Вийти з аккаунту</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Modal -->
-    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row dark:bg-dark-surface dark:text-white">
+    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-start md:items-center justify-center hidden z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl md:max-h-[90vh] md:overflow-hidden flex flex-col md:flex-row dark:bg-dark-surface dark:text-white my-8 md:my-0">
             <!-- Form Section -->
-            <div class="flex-1 p-8 md:p-10 border-b md:border-b-0 md:border-r border-gray-100 overflow-y-auto dark:border-dark-border">
-                <h2 class="text-3xl font-light mb-8">Новий товар</h2>
+            <div class="flex-1 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-100 md:overflow-y-auto dark:border-dark-border">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-light">Новий товар</h2>
+                    <button id="close-modal" class="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-dark-bg" title="Закрити">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
                 <form id="add-product-form" class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">Назва</label>
@@ -238,7 +288,7 @@
             </div>
             
             <!-- List Section -->
-            <div class="flex-1 bg-gray-50 p-8 md:p-10 overflow-y-auto flex flex-col dark:bg-dark-bg">
+            <div class="flex-1 bg-gray-50 p-8 md:p-10 md:overflow-y-auto flex flex-col dark:bg-dark-bg">
                 <!-- Statistics Section -->
                 <div class="mb-10 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 dark:bg-dark-surface dark:border-dark-border">
                     <div class="flex justify-between items-center mb-4">
@@ -263,23 +313,42 @@
                 </div>
 
                 <!-- Блок налаштувань -->
+                <div class="mb-8">
+                    <a href="./INSTRUKTSIYA.txt" download class="flex items-center justify-center w-full bg-blue-50 text-blue-600 py-4 rounded-xl text-lg font-medium hover:bg-blue-100 transition-all shadow-sm dark:bg-blue-900/20 dark:text-blue-400">
+                        <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        ЗАВАНТАЖИТИ ІНСТРУКЦІЮ
+                    </a>
+                </div>
+
                 <div class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100 dark:bg-dark-surface dark:border-dark-border">
                     <div class="space-y-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Назва магазину</label>
                             <input type="text" id="setting-store-name" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white" placeholder="Мій Магазин">
+                            <p class="text-xs text-gray-400 mt-1 italic">Це назва, яку бачать покупці на головній сторінці</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Email для сповіщень</label>
                             <input type="email" id="setting-email" class="w-full px-4 py-3 text-lg rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all dark:bg-dark-bg dark:border-dark-border dark:text-white" placeholder="owner@example.com">
                             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Сюди будуть приходити копії замовлень із сайту</p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <button onclick="testTelegram()" type="button" class="py-3 px-4 bg-blue-50 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors text-sm flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                    Перевірити Telegram
+                                </button>
+                                <button onclick="testEmail()" type="button" class="py-3 px-4 bg-purple-50 text-purple-600 rounded-xl font-medium hover:bg-purple-100 transition-colors text-sm flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    Перевірити Email
+                                </button>
+                            </div>
                         </div>
 
                         <div class="flex items-center gap-4 py-2">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="setting-email-notification" class="sr-only peer">
-                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-black"></div>
+                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
                                 <span class="ml-3 text-lg font-medium text-gray-900 dark:text-gray-300">Дублювати замовлення на Email</span>
                             </label>
                         </div>
@@ -291,9 +360,10 @@
                                 <option value="€">Євро (€)</option>
                                 <option value="$">Долар ($)</option>
                             </select>
+                            <p class="text-xs text-gray-400 mt-1 italic">Валюта, в якій відображаються ціни</p>
                         </div>
 
-                        <button onclick="saveSettings()" id="save-settings-btn" class="w-full bg-black text-white py-4 rounded-xl text-lg font-medium hover:bg-gray-800 transition-all shadow-lg active:scale-95 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                        <button onclick="saveSettings()" id="save-settings-btn" class="w-full bg-green-500 text-white py-4 rounded-xl text-lg font-bold uppercase tracking-wider hover:bg-green-600 transition-all shadow-lg active:scale-95 dark:bg-green-600 dark:hover:bg-green-700">
                             Зберегти налаштування
                         </button>
                     </div>
@@ -365,6 +435,20 @@
                 </div>
                 <p class="mt-6 text-[10px] text-gray-300 italic text-center uppercase tracking-widest">Дані зберігаються локально на цьому пристрої</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Admin Alert Modal -->
+    <div id="admin-alert-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 dark:bg-dark-surface dark:text-white text-center">
+            <div id="alert-icon" class="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-gray-100 dark:bg-dark-bg">
+                <!-- Icon injected here -->
+            </div>
+            <h3 id="alert-title" class="text-2xl font-light mb-2">Заголовок</h3>
+            <p id="alert-message" class="text-gray-500 mb-8 dark:text-gray-400">Повідомлення</p>
+            <button id="alert-close-btn" class="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200">
+                ЗРОЗУМІЛО
+            </button>
         </div>
     </div>
 

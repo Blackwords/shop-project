@@ -26,9 +26,14 @@ function togglePassword(inputId) {
 // Функція відправки замовлення на Email
 async function sendEmailOrder(cartItems, totalAmount) {
     if (!storeSettings.email) {
-        console.warn('Email for notifications is not set');
+        // Email for notifications is not set
         return;
     }
+
+    // Отримуємо дані покупця
+    const customerName = document.getElementById('customer-name')?.value || 'Не вказано';
+    const customerPhone = document.getElementById('customer-phone')?.value || 'Не вказано';
+    const customerEmail = document.getElementById('customer-email')?.value || '';
 
     // Формуємо деталі замовлення
     const orderDetails = cartItems.map(item => 
@@ -44,17 +49,145 @@ async function sendEmailOrder(cartItems, totalAmount) {
         store_name: storeSettings.name,
         order_details: orderDetails,
         total_amount: totalStr,
-        order_date: dateStr
+        order_date: dateStr,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail
     };
 
     try {
         // Відправка через EmailJS
-        await emailjs.send('service_621igog', 'template_xskkcff', templateParams);
-        console.log('Email sent successfully');
+        await emailjs.send('service_621igog', 'template_dsnkd4r', templateParams);
         showToast('Копія замовлення надіслана на пошту', 'success');
     } catch (error) {
-        console.error('Email sending failed:', error);
         // Не показуємо помилку користувачу, щоб не лякати, але логуємо
+    }
+}
+
+// Функціонал входу для покупця
+function initUserAuth() {
+    if (!userLoginBtn || !userModal) return;
+
+    // Відкриття модального вікна
+    userLoginBtn.addEventListener('click', () => {
+        userModal.classList.remove('hidden');
+        // Анімація появи
+        setTimeout(() => {
+            userModal.classList.remove('opacity-0');
+            userModal.querySelector('div').classList.remove('scale-95');
+            userModal.querySelector('div').classList.add('scale-100');
+        }, 10);
+
+        // Заповнення полів, якщо дані вже є
+        const user = JSON.parse(localStorage.getItem('customerData') || '{}');
+        if (user.name) {
+            document.getElementById('user-login-name').value = user.name;
+            document.getElementById('user-login-phone').value = user.phone;
+            document.getElementById('user-login-email').value = user.email || '';
+            userLogoutBtn.classList.remove('hidden');
+        } else {
+            userLogoutBtn.classList.add('hidden');
+        }
+    });
+
+    // Закриття модального вікна
+    const closeModal = () => {
+        userModal.classList.add('opacity-0');
+        userModal.querySelector('div').classList.remove('scale-100');
+        userModal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            userModal.classList.add('hidden');
+        }, 300);
+    };
+
+    if (closeUserModal) closeUserModal.addEventListener('click', closeModal);
+    
+    // Закриття по кліку на фон
+    userModal.addEventListener('click', (e) => {
+        if (e.target === userModal) closeModal();
+    });
+
+    // Обробка форми входу
+    if (userLoginForm) {
+        userLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('user-login-name').value.trim();
+            const phone = document.getElementById('user-login-phone').value.trim();
+            const email = document.getElementById('user-login-email').value.trim();
+
+            if (!name || !phone) {
+                showToast("Будь ласка, введіть ім'я та телефон", "error");
+                return;
+            }
+
+            const customerData = { name, phone, email };
+            localStorage.setItem('customerData', JSON.stringify(customerData));
+            
+            showToast(`Вітаємо, ${name}!`, "success");
+            checkUserAuth(); // Оновити UI
+            closeModal();
+            
+            // Якщо кошик відкритий, оновити поля там теж
+            updateCartCustomerData();
+        });
+    }
+
+    // Вихід
+    if (userLogoutBtn) {
+        userLogoutBtn.addEventListener('click', () => {
+            if (confirm('Ви впевнені, що хочете вийти? Ваші дані будуть видалені з цього пристрою.')) {
+                localStorage.removeItem('customerData');
+                document.getElementById('user-login-form').reset();
+                checkUserAuth();
+                closeModal();
+                showToast('Ви вийшли з системи', 'success');
+            }
+        });
+    }
+
+    // Перевірка при завантаженні
+    checkUserAuth();
+}
+
+function checkUserAuth() {
+    const user = JSON.parse(localStorage.getItem('customerData') || 'null');
+    if (user && userLoginBtn) {
+        // Змінюємо іконку на "активну" або показуємо галочку
+        userLoginBtn.innerHTML = `
+            <div class="relative">
+                <svg class="w-6 h-6 text-black dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <div class="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-white dark:border-dark-bg">
+                    <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+            </div>
+        `;
+        userLoginBtn.title = `Ви увійшли як ${user.name}`;
+    } else if (userLoginBtn) {
+        // Повертаємо звичайну іконку
+        userLoginBtn.innerHTML = `
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+        `;
+        userLoginBtn.title = "Вхід для покупця";
+    }
+}
+
+function updateCartCustomerData() {
+    const user = JSON.parse(localStorage.getItem('customerData') || 'null');
+    if (user) {
+        const nameInput = document.getElementById('customer-name');
+        const phoneInput = document.getElementById('customer-phone');
+        const emailInput = document.getElementById('customer-email');
+
+        if (nameInput) nameInput.value = user.name;
+        if (phoneInput) phoneInput.value = user.phone;
+        if (emailInput) emailInput.value = user.email || '';
     }
 }
 
@@ -65,9 +198,8 @@ if (typeof window.supabaseClientInstance === 'undefined') {
 }
 sb = window.supabaseClientInstance;
 
-// DOM елементиTelegram налаштування тепер у script.js
-
 // DOM елементи
+
 const productList = document.getElementById('product-list');
 const searchInput = document.getElementById('search-input');
 const adminTrigger = document.getElementById('admin-trigger');
@@ -98,13 +230,20 @@ const saveSettingsBtn = document.getElementById('save-settings-btn');
 
 // Cart Elements
 const cartBtn = document.getElementById('cart-btn');
+const cartCountEl = document.getElementById('cart-count');
 const cartModal = document.getElementById('cart-modal');
 const cartPanel = document.getElementById('cart-panel');
 const closeCartBtn = document.getElementById('close-cart');
 const cartItemsContainer = document.getElementById('cart-items');
 const cartTotalEl = document.getElementById('cart-total');
 const checkoutBtn = document.getElementById('checkout-btn');
-const cartCountEl = document.getElementById('cart-count');
+
+// User Auth Elements
+const userLoginBtn = document.getElementById('user-login-btn');
+const userModal = document.getElementById('user-modal');
+const closeUserModal = document.getElementById('close-user-modal');
+const userLoginForm = document.getElementById('user-login-form');
+const userLogoutBtn = document.getElementById('user-logout-btn');
 
 // Store Settings State
 let storeSettings = {
@@ -121,12 +260,9 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // Функція ініціалізації подій
 function initEventListeners() {
-    console.log("Initializing Event Listeners...");
-
     if (loginBtn) {
         loginBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log("Login button clicked!");
             const password = prompt('Введіть пароль адміністратора:');
             if (password === storeSettings.adminPassword) {
                 sessionStorage.setItem('isAdmin', 'true');
@@ -135,8 +271,6 @@ function initEventListeners() {
                 alert('Невірний пароль!');
             }
         });
-    } else {
-        console.error("CRITICAL: login-btn not found!");
     }
 
     if (logoutBtn) {
@@ -394,6 +528,7 @@ function initEventListeners() {
                 cartPanel.classList.remove('translate-x-full');
             }, 10);
             renderCart();
+            updateCartCustomerData(); // Заповнюємо дані покупця
         });
     }
 
@@ -440,10 +575,8 @@ window.setCategory = function(cat) {
 
 // Функція підготовки форми до редагування
 window.editProduct = function(id) {
-    console.log('Edit product clicked:', id);
     const product = products.find(p => p.id == id); // Loose equality for string/number match
     if (!product) {
-        console.error('Product not found for editing');
         return;
     }
 
@@ -483,7 +616,6 @@ function resetForm() {
 
 // Завантаження товарів з Supabase
 async function fetchProducts() {
-    console.log("Спроба завантажити товари з Supabase...");
     try {
         const { data, error } = await sb
             .from('products')
@@ -491,18 +623,14 @@ async function fetchProducts() {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Помилка Supabase:', error.message);
-            // Якщо таблиці немає, ми це побачимо в консолі
             return;
         }
 
-        console.log("Товари завантажено успішно:", data);
         products = data;
         renderCategories(); // Оновлюємо фільтри
         renderProducts();
         renderAdminList();
     } catch (err) {
-        console.error('Критична помилка підключення:', err);
     }
 }
 
@@ -586,6 +714,103 @@ function showToast(message, type = 'success') {
 
 
 
+// Функція відображення великого Alert
+function showLargeAlert(title, message, type = 'success') {
+    const modal = document.getElementById('admin-alert-modal');
+    const iconContainer = document.getElementById('alert-icon');
+    const titleEl = document.getElementById('alert-title');
+    const messageEl = document.getElementById('alert-message');
+    const closeBtn = document.getElementById('alert-close-btn');
+
+    if (!modal) return;
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    if (type === 'success') {
+        iconContainer.innerHTML = '<svg class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+        iconContainer.className = "mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20";
+    } else {
+        iconContainer.innerHTML = '<svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
+        iconContainer.className = "mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20";
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+        modal.querySelector('div').classList.add('scale-100');
+    }, 10);
+
+    const close = () => {
+        modal.classList.add('opacity-0');
+        modal.querySelector('div').classList.remove('scale-100');
+        modal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+        closeBtn.removeEventListener('click', close);
+    };
+
+    closeBtn.addEventListener('click', close);
+}
+
+// Тестові функції
+window.testTelegram = async function() {
+    const chatId = localStorage.getItem('tgChatId');
+    const token = localStorage.getItem('tgBotToken');
+    
+    if (!chatId || !token) {
+        showLargeAlert('Помилка', 'Спочатку налаштуйте Telegram (кнопка з шестернею біля товарів)', 'error');
+        return;
+    }
+
+    try {
+        const url = `https://api.telegram.org/bot${token}/sendMessage`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: "🔔 Тестове повідомлення від MY STORE!\nЯкщо ви це читаєте, значить все працює.",
+                parse_mode: 'Markdown'
+            })
+        });
+
+        if (response.ok) {
+            showLargeAlert('Успіх!', 'Тестове повідомлення надіслано в Telegram', 'success');
+        } else {
+            throw new Error('Telegram API error');
+        }
+    } catch (e) {
+        showLargeAlert('Помилка', 'Не вдалося надіслати повідомлення. Перевірте токен та Chat ID.', 'error');
+    }
+};
+
+window.testEmail = async function() {
+    if (!storeSettings.email) {
+        showLargeAlert('Помилка', 'Вкажіть Email для сповіщень у налаштуваннях', 'error');
+        return;
+    }
+
+    const templateParams = {
+        to_email: storeSettings.email,
+        store_name: storeSettings.name,
+        order_details: "Це тестове замовлення для перевірки зв'язку.",
+        total_amount: "0.00",
+        order_date: new Date().toLocaleString('uk-UA'),
+        customer_name: "Власник (Тест)",
+        customer_phone: "-",
+        customer_email: storeSettings.email
+    };
+
+    try {
+        await emailjs.send('service_621igog', 'template_dsnkd4r', templateParams);
+        showLargeAlert('Успіх!', `Тестовий лист надіслано на ${storeSettings.email}`, 'success');
+    } catch (error) {
+        console.error(error);
+        showLargeAlert('Помилка', 'Не вдалося надіслати лист. Перевірте налаштування EmailJS.', 'error');
+    }
+};
+
 // Завантаження статистики замовлень
 async function fetchOrders() {
     if (!ordersList || !totalSalesEl) return;
@@ -604,7 +829,6 @@ async function fetchOrders() {
         .neq('status', 'cancelled'); // Не рахуємо скасовані
 
     if (listError || totalError) {
-        console.error('Error fetching orders:', listError || totalError);
         ordersList.innerHTML = '<p class="text-red-400 text-xs">Помилка завантаження статистики.</p>';
         return;
     }
@@ -670,7 +894,6 @@ async function changeOrderStatus(id, newStatus) {
 
     if (error) {
         showToast('Помилка оновлення статусу', 'error');
-        console.error('Update status error:', error);
     } else {
         showToast('Статус оновлено', 'success');
         fetchOrders(); // Оновлюємо список
@@ -890,6 +1113,11 @@ async function handleCheckout() {
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
+    // Отримуємо дані покупця
+    const customerName = document.getElementById('customer-name')?.value || 'Не вказано';
+    const customerPhone = document.getElementById('customer-phone')?.value || 'Не вказано';
+    const customerEmail = document.getElementById('customer-email')?.value || '';
+
     // Формування повідомлення для Telegram (видаляємо старий блок, бо він формується перед відправкою)
     
     try {
@@ -898,7 +1126,12 @@ async function handleCheckout() {
         cart.forEach(item => {
             message += `▫️ ${item.name}\n   ${item.quantity} шт. x ${item.price} ${storeSettings.currency} = ${item.quantity * item.price} ${storeSettings.currency}\n\n`;
         });
-        message += `💰 *РАЗОМ: ${total.toLocaleString()} ${storeSettings.currency}*`;
+        message += `💰 *РАЗОМ: ${total.toLocaleString()} ${storeSettings.currency}*\n\n`;
+        
+        message += `👤 *Клієнт:*\n`;
+        message += `Ім'я: ${customerName}\n`;
+        message += `Телефон: ${customerPhone}\n`;
+        if (customerEmail) message += `Email: ${customerEmail}`;
 
         const telegramSuccess = await sendTelegramMessage(message);
 
@@ -909,7 +1142,7 @@ async function handleCheckout() {
         // 1.1 Відправка Email (якщо увімкнено)
         if (storeSettings.emailNotification) {
             // Ми не блокуємо оформлення, якщо email не пішов, але логуємо це
-            sendEmailOrder(cart, total).catch(err => console.error('Email error:', err));
+            sendEmailOrder(cart, total).catch(err => {});
         }
 
         // 2. Запис в Supabase (кожен товар окремо для статистики)
@@ -944,19 +1177,19 @@ async function handleCheckout() {
 function renderAdminList() {
     if (!adminProductList) return;
     adminProductList.innerHTML = products.map(product => `
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl dark:bg-dark-bg">
-            <div class="flex items-center gap-4">
-                <img src="${product.photo || 'https://via.placeholder.com/50'}" alt="${product.name}" class="w-12 h-12 object-cover rounded-lg">
-                <div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">${product.name}</h4>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 rounded-xl dark:bg-dark-bg gap-4">
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <img src="${product.photo || 'https://via.placeholder.com/50'}" alt="${product.name}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0">
+                <div class="overflow-hidden">
+                    <h4 class="font-medium text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">${product.name}</h4>
                     <p class="text-sm text-gray-500">${product.price} ₴</p>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="editProduct('${product.id}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+            <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <button onclick="editProduct('${product.id}')" class="flex-1 sm:flex-none px-4 py-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 text-center">
                     Редагувати
                 </button>
-                <button onclick="deleteProduct('${product.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
+                <button onclick="deleteProduct('${product.id}')" class="flex-1 sm:flex-none px-4 py-3 bg-red-500 text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-red-600 transition-colors shadow-md text-center">
                     Видалити
                 </button>
             </div>
@@ -1048,7 +1281,7 @@ async function fetchSettings() {
         .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        console.error('Error fetching settings:', error);
+        // Error fetching settings
     } else if (data) {
         storeSettings = {
             name: data.store_name || 'MY STORE',
@@ -1151,7 +1384,6 @@ async function updateAccessData() {
         .eq('id', 1);
 
     if (error) {
-        console.error('Error updating access data:', error);
         showToast('Помилка оновлення даних', 'error');
     } else {
         // Оновлюємо локальний стан
@@ -1191,7 +1423,6 @@ async function saveSettings() {
 
     if (error) {
         showToast('Помилка збереження налаштувань', 'error');
-        console.error('Save settings error:', error);
     } else {
         showToast('Налаштування успішно збережено!', 'success');
         storeSettings = {
@@ -1213,10 +1444,11 @@ async function saveSettings() {
 async function init() {
     initTheme();
     initEventListeners();
+    initUserAuth(); // Ініціалізація входу для покупців
     await fetchSettings(); // Завантажуємо налаштування першими
     await fetchProducts();
     updateCartCount();
-    checkAuth();
+    checkAuth(); // Перевірка адмінського доступу
 }
 
 init();

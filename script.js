@@ -17,7 +17,6 @@ async function sendTelegramMessage(messageText) {
   const chatId = getChatId();
   
   if (!token || !chatId) {
-      console.error('Telegram credentials missing');
       return false;
   }
 
@@ -43,12 +42,9 @@ async function sendTelegramMessage(messageText) {
     if (response.ok) {
       return true; // Успішно
     } else {
-      const errText = await response.text();
-      console.error('Telegram error:', errText);
       return false; // Помилка API
     }
   } catch (error) {
-    console.error('Помилка Telegram API:', error);
     return false; // Помилка мережі
   }
 }
