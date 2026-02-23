@@ -806,7 +806,6 @@ window.testEmail = async function() {
         await emailjs.send('service_621igog', 'template_dsnkd4r', templateParams);
         showLargeAlert('Успіх!', `Тестовий лист надіслано на ${storeSettings.email}`, 'success');
     } catch (error) {
-        console.error(error);
         showLargeAlert('Помилка', 'Не вдалося надіслати лист. Перевірте налаштування EmailJS.', 'error');
     }
 };
