@@ -257,6 +257,8 @@ let storeSettings = {
 
 // Cart State
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
 // Функція ініціалізації подій
 function initEventListeners() {
@@ -952,6 +954,12 @@ function renderProducts() {
             ` : ''}
 
             <div class="relative overflow-hidden aspect-[4/5]">
+                <button onclick="toggleFavorite('${product.id}')" 
+                        class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm ${favorites.includes(product.id) ? 'text-red-500' : ''}">
+                    <svg class="w-5 h-5" fill="${favorites.includes(product.id) ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
                 <img src="${product.photo || 'https://via.placeholder.com/400'}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500"></div>
                 
@@ -1154,6 +1162,16 @@ async function handleCheckout() {
         });
 
         await Promise.all(orderPromises);
+
+        // 3. Save to Local History
+        const newOrder = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }),
+            items: [...cart],
+            total: total
+        };
+        orderHistory.unshift(newOrder);
+        saveOrderHistory();
 
         // Успіх
         cart = [];
@@ -1439,11 +1457,208 @@ async function saveSettings() {
     saveSettingsBtn.disabled = false;
 }
 
+// --- Profile Logic ---
+
+function saveFavorites() {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+function saveOrderHistory() {
+    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+}
+
+function toggleFavorite(id) {
+    if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+        showToast('Видалено з обраного');
+    } else {
+        favorites.push(id);
+        showToast('Додано в обране');
+    }
+    saveFavorites();
+    renderProducts(); // Re-render to update icons
+    renderProfile(); // Update profile list if open
+}
+
+function clearFavorites() {
+    if(confirm('Ви впевнені?')) {
+        favorites = [];
+        saveFavorites();
+        renderProfile();
+        renderProducts();
+    }
+}
+
+function clearHistory() {
+    if(confirm('Ви впевнені?')) {
+        orderHistory = [];
+        saveOrderHistory();
+        renderProfile();
+    }
+}
+
+function renderProfile() {
+    const favoritesList = document.getElementById('favorites-list');
+    const historyList = document.getElementById('history-list');
+    
+    // Render Favorites
+    if (favoritesList) {
+        if (favorites.length === 0) {
+            favoritesList.innerHTML = '<p class="text-gray-400 font-light italic text-center py-8">Список порожній</p>';
+        } else {
+            const favProducts = products.filter(p => favorites.includes(p.id));
+            favoritesList.innerHTML = favProducts.map(p => `
+                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl dark:bg-dark-bg">
+                    <div class="flex items-center gap-4">
+                        <img src="${p.photo || 'https://via.placeholder.com/50'}" class="w-16 h-16 rounded-lg object-cover bg-white">
+                        <div>
+                            <h4 class="text-lg font-light dark:text-white">${p.name}</h4>
+                            <p class="text-sm text-gray-500 font-bold">${p.price} ${storeSettings.currency || 'UAH'}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleFavorite('${p.id}')" class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors dark:hover:bg-red-900/20">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Render History
+    if (historyList) {
+        if (orderHistory.length === 0) {
+            historyList.innerHTML = '<p class="text-gray-400 font-light italic text-center py-8">Історія порожня</p>';
+        } else {
+            // Sort history by date desc
+            const sortedHistory = [...orderHistory].sort((a, b) => b.id - a.id);
+            
+            historyList.innerHTML = sortedHistory.map(order => `
+                <div class="bg-gray-50 p-6 rounded-2xl dark:bg-dark-bg border border-gray-100 dark:border-dark-border">
+                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-sm text-gray-500 uppercase tracking-widest">${order.date}</span>
+                        <span class="text-xl font-light dark:text-white">${order.total.toLocaleString()} ${storeSettings.currency || 'UAH'}</span>
+                    </div>
+                    <div class="space-y-2">
+                        ${order.items.map(item => `
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-800 dark:text-gray-300 font-medium">${item.name}</span>
+                                <span class="text-gray-500">x${item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 pt-2 text-xs text-green-600 uppercase tracking-widest font-bold text-right">
+                        Виконано
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+function switchProfileTab(tab) {
+    const tabFavorites = document.getElementById('tab-favorites');
+    const tabHistory = document.getElementById('tab-history');
+    const sectionFavorites = document.getElementById('favorites-section');
+    const sectionHistory = document.getElementById('history-section');
+
+    if (tab === 'favorites') {
+        tabFavorites.classList.add('border-black', 'text-black', 'dark:text-white', 'dark:border-white');
+        tabFavorites.classList.remove('border-transparent', 'text-gray-400');
+        
+        tabHistory.classList.remove('border-black', 'text-black', 'dark:text-white', 'dark:border-white');
+        tabHistory.classList.add('border-transparent', 'text-gray-400');
+        
+        sectionFavorites.classList.remove('hidden');
+        sectionHistory.classList.add('hidden');
+    } else {
+        tabHistory.classList.add('border-black', 'text-black', 'dark:text-white', 'dark:border-white');
+        tabHistory.classList.remove('border-transparent', 'text-gray-400');
+        
+        tabFavorites.classList.remove('border-black', 'text-black', 'dark:text-white', 'dark:border-white');
+        tabFavorites.classList.add('border-transparent', 'text-gray-400');
+        
+        sectionHistory.classList.remove('hidden');
+        sectionFavorites.classList.add('hidden');
+    }
+}
+
+function clearAllData() {
+    if (confirm('Ви впевнені, що хочете видалити ВСІ дані (кошик, обране, історію)? Цю дію неможливо скасувати.')) {
+        localStorage.removeItem('cart');
+        localStorage.removeItem('favorites');
+        localStorage.removeItem('orderHistory');
+        // Також можна очистити дані покупця, якщо вони є
+        
+        cart = [];
+        favorites = [];
+        orderHistory = [];
+        
+        saveCart();
+        renderCart();
+        updateCartCount();
+        renderProfile();
+        renderProducts();
+        
+        showToast('Всі дані успішно видалено', 'success');
+        
+        // Close profile modal after clearing
+        const profileModal = document.getElementById('profile-modal');
+        const profilePanel = document.getElementById('profile-panel');
+        if (profileModal && profilePanel) {
+            profilePanel.classList.add('translate-x-full');
+            setTimeout(() => {
+                profileModal.classList.add('hidden');
+            }, 300);
+        }
+    }
+}
+
+function initProfile() {
+    const profileBtn = document.getElementById('profile-btn');
+    const profileModal = document.getElementById('profile-modal');
+    const closeProfileBtn = document.getElementById('close-profile');
+    const profilePanel = document.getElementById('profile-panel');
+
+    function openProfile() {
+        if (profileModal && profilePanel) {
+            profileModal.classList.remove('hidden');
+            setTimeout(() => {
+                profilePanel.classList.remove('translate-x-full');
+            }, 10);
+            renderProfile();
+        }
+    }
+
+    function closeProfile() {
+        if (profileModal && profilePanel) {
+            profilePanel.classList.add('translate-x-full');
+            setTimeout(() => {
+                profileModal.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    if (profileBtn) {
+        profileBtn.addEventListener('click', openProfile);
+    }
+
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', closeProfile);
+    }
+
+    if (profileModal) {
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) closeProfile();
+        });
+    }
+}
+
 // Ініціалізація
 async function init() {
     initTheme();
     initEventListeners();
     initUserAuth(); // Ініціалізація входу для покупців
+    initProfile(); // Ініціалізація профілю
     await fetchSettings(); // Завантажуємо налаштування першими
     await fetchProducts();
     updateCartCount();

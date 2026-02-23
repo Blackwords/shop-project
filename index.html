@@ -88,6 +88,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
             </button>
+            <button id="profile-btn" class="p-2 text-gray-800 hover:text-black dark:text-gray-300 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" title="Мій кабінет">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+            </button>
             <button id="cart-btn" class="relative p-2 text-gray-800 hover:text-black transition-colors dark:text-gray-300 dark:hover:text-white">
                 <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -449,6 +454,58 @@
             <button id="alert-close-btn" class="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200">
                 ЗРОЗУМІЛО
             </button>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden transition-opacity">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform translate-x-full dark:bg-dark-surface dark:text-white" id="profile-panel">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-dark-border">
+                <h2 class="text-xl font-light uppercase tracking-widest">Мій Кабінет</h2>
+                <button id="close-profile" class="text-gray-400 hover:text-black dark:hover:text-white">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6 space-y-8">
+                <!-- Welcome Message -->
+                <div class="bg-gray-50 p-6 rounded-2xl dark:bg-dark-bg text-center">
+                    <p class="text-lg font-light text-gray-600 dark:text-gray-300">Ми не збираємо ваші дані. Цей розділ працює лише на вашому пристрої для вашої зручності.</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 dark:border-gray-700">
+                    <button onclick="switchProfileTab('favorites')" id="tab-favorites" class="flex-1 pb-4 text-sm uppercase tracking-widest font-semibold border-b-2 border-black text-black dark:text-white dark:border-white transition-colors">
+                        Мені сподобалось
+                    </button>
+                    <button onclick="switchProfileTab('history')" id="tab-history" class="flex-1 pb-4 text-sm uppercase tracking-widest font-semibold border-b-2 border-transparent text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                        Історія замовлень
+                    </button>
+                </div>
+
+                <!-- Favorites Section -->
+                <div id="favorites-section" class="space-y-4">
+                    <div id="favorites-list" class="space-y-4">
+                        <!-- Favorites injected here -->
+                        <p class="text-gray-400 font-light italic text-center py-8">Список порожній</p>
+                    </div>
+                </div>
+
+                <!-- Order History Section -->
+                <div id="history-section" class="space-y-4 hidden">
+                    <div id="history-list" class="space-y-6">
+                        <!-- History injected here -->
+                        <p class="text-gray-400 font-light italic text-center py-8">Історія порожня</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-6 border-t border-gray-100 bg-gray-50 dark:bg-dark-bg dark:border-dark-border">
+                <button onclick="clearAllData()" class="w-full py-4 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors uppercase tracking-widest text-xs font-bold dark:hover:bg-red-900/20">
+                    Очистити всі мої дані на цьому сайті
+                </button>
+            </div>
         </div>
     </div>
 
